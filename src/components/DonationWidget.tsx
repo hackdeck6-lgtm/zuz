@@ -141,7 +141,7 @@ export default function DonationWidget({ selectedDefaultAmount }: DonationWidget
   };
 
   return (
-    <div id="donation-widget" className="bg-white rounded-3xl shadow-xl overflow-hidden border border-stone-100 flex flex-col justify-between h-full min-h-[520px]">
+    <div id="donation-widget" className="bg-white rounded-3xl shadow-xl overflow-hidden border border-stone-100 flex flex-col">
       {/* Widget Header */}
       <div className="bg-gradient-to-r from-terracotta-600 to-amber-500 p-6 text-white flex justify-between items-center">
         <div>
@@ -177,7 +177,7 @@ export default function DonationWidget({ selectedDefaultAmount }: DonationWidget
       </div>
 
       {/* Main Form Body */}
-      <div className="p-6 flex-grow flex flex-col justify-center">
+      <div className="p-6 flex flex-col">
         <AnimatePresence mode="wait">
 
           {/* Step 1: Amount */}

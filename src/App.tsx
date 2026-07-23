@@ -9,11 +9,14 @@ import { HeartHandshake } from 'lucide-react';
 import { Donation, ImpactStats } from './types';
 import VideoPlayer from './components/VideoPlayer';
 import DonationWidget from './components/DonationWidget';
+// Import do asset local pelo Vite: garante que a imagem entre no build de
+// produção (dist/) com a URL correta. Referenciar '/src/...' como string quebra
+// em produção, pois esse caminho não existe fora do dev server.
+import dentistVolunteer from './assets/images/dentist_volunteer_africa_1784515841021.jpg';
 
 // Durable-hosted official Assets for Zuzu for Africa
 const officialLogo = 'https://cdn.durable.co/logos/14itIyxgyjv6xe08uxwm3o5Sz7WnGAph8kzxjDuOJfih5PtxuSRzFlmysnH4DGM1.png';
 const heroCover = 'https://cdn.durable.co/covers/31Jguiela0OzJktJDRvqAEJOO6HNrkXE9vy5J3BSU9Ay8og5CiW5iVBkHyGOg6Zo.jpg';
-const dentistVolunteer = '/src/assets/images/dentist_volunteer_africa_1784515841021.jpg';
 
 // Imagens dos cards de impacto — selecionadas por tema (crianças africanas, refeição,
 // saúde odontológica, savana angolana, material escolar). Alta resolução p/ nitidez.
@@ -86,6 +89,18 @@ export default function App() {
   useEffect(() => {
     fetchBoardData();
   }, []);
+
+  // Trava o scroll da página enquanto o modal de doação está aberto — o fundo
+  // não deve mexer por trás do modal (evita o "ar de site falso"). Ao fechar,
+  // restaura exatamente o overflow original do body.
+  useEffect(() => {
+    if (!isDonationModalOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isDonationModalOpen]);
 
   const scrollToSection = (id: string) => {
     const section = document.getElementById(id);
@@ -626,13 +641,14 @@ export default function App() {
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
 
-            {/* Corpo do modal */}
+            {/* Corpo do modal — nunca ultrapassa a altura da viewport, mas
+                sem barra de rolagem no uso normal (o conteúdo se ajusta). */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ type: 'spring', duration: 0.5 }}
-              className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-stone-100 overflow-hidden z-10 text-stone-900"
+              className="relative w-full max-w-lg max-h-[90vh] flex flex-col bg-white rounded-3xl shadow-2xl border border-stone-100 overflow-hidden z-10 text-stone-900"
             >
               {/* Barra superior do modal */}
               <div className="bg-stone-50 px-6 py-4 border-b border-stone-100 flex items-center justify-between">
@@ -654,8 +670,10 @@ export default function App() {
                 </button>
               </div>
 
-              {/* DonationWidget rolável */}
-              <div className="max-h-[80vh] overflow-y-auto p-6">
+              {/* Área do widget: cresce com o conteúdo. Só rola por dentro
+                  (com overscroll contido, sem vazar pro fundo) se a tela for
+                  baixa demais para exibir tudo — no uso normal, sem barra. */}
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6">
                 <DonationWidget
                   selectedDefaultAmount={selectedDefaultAmount}
                 />
