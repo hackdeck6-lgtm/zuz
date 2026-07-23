@@ -61,6 +61,20 @@ describe('createPixHandler', () => {
     await createPixHandler(req, res);
     expect(res.status).toHaveBeenCalledWith(400);
   });
+
+  it('se a persistência falhar após gerar a cobrança, ainda devolve o Pix (não 500) e loga o órfão', async () => {
+    // A cobrança na PoseidonPay já foi criada; uma falha ao gravar no Supabase
+    // não deve esconder o Pix do doador nem retornar erro.
+    (supa.createTransaction as any).mockRejectedValueOnce(new Error('db down'));
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const req = { body: { amount: 100, name: 'João', email: 'j@x.com', isAnonymous: false, message: 'oi' } } as Request;
+    const res = mockRes();
+    await createPixHandler(req, res);
+    expect(res.status).not.toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ pixCode: 'PIXCODE' }));
+    expect(errSpy).toHaveBeenCalledWith(expect.stringContaining('ÓRFÃ'));
+    errSpy.mockRestore();
+  });
 });
 
 describe('webhookHandler', () => {

@@ -44,16 +44,28 @@ export async function createPixHandler(req: Request, res: Response): Promise<voi
       callbackUrl,
     });
 
-    await createTransaction({
-      identifier,
-      amount: numericAmount,
-      donorName: String(name),
-      donorEmail: String(donorEmail),
-      donorPhone: phone ? String(phone) : null,
-      message: message ? String(message) : null,
-      isAnonymous: Boolean(isAnonymous),
-      pixCode: pix.pixCode,
-    });
+    // A cobrança já existe na PoseidonPay neste ponto. Se a persistência falhar,
+    // NÃO devolvemos erro ao doador (o Pix é válido e pode ser pago) — mas
+    // logamos o "órfão" de forma explícita para recuperação manual, já que o
+    // webhook não encontrará a transação e não notificará o doador.
+    try {
+      await createTransaction({
+        identifier,
+        amount: numericAmount,
+        donorName: String(name),
+        donorEmail: String(donorEmail),
+        donorPhone: phone ? String(phone) : null,
+        message: message ? String(message) : null,
+        isAnonymous: Boolean(isAnonymous),
+        pixCode: pix.pixCode,
+      });
+    } catch (persistErr: any) {
+      console.error(
+        `[pix/create] COBRANÇA ÓRFÃ — Pix gerado na PoseidonPay mas falhou ao persistir. ` +
+          `identifier=${identifier} email=${donorEmail} amount=${numericAmount} ` +
+          `pixCode=${pix.pixCode} erro=${persistErr?.message}`,
+      );
+    }
 
     // Funil: InitiateCheckout na geração do Pix (dedup com o Pixel do browser via mesmo eventId).
     await sendCapiEvent({
