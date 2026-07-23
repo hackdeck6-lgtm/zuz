@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'path';
 import { GoogleGenAI } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
+import { registerPixRoutes } from './routes/pix';
 
 interface Donation {
   id: string;
@@ -30,6 +31,7 @@ function getAiClient(): GoogleGenAI | null {
 export async function createApp(): Promise<express.Express> {
   const app = express();
   app.use(express.json());
+  registerPixRoutes(app);
 
   app.get('/api/donations', (req, res) => {
     res.json({
