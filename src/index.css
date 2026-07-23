@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Poppins", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "League Spartan", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --color-brand-yellow: #F2CA2C;
+  --color-brand-gray: #f5f4f5;
+  --color-brand-dark: #111827;
+  --color-brand-brown: #533413;
+  
+  --color-terracotta-50: #fdf8f5;
+  --color-terracotta-100: #fbf0e8;
+  --color-terracotta-200: #f5dcce;
+  --color-terracotta-300: #ecbea6;
+  --color-terracotta-400: #e09774;
+  --color-terracotta-500: #d47247;
+  --color-terracotta-600: #c55731;
+  --color-terracotta-700: #a44225;
+  --color-terracotta-800: #843621;
+  --color-terracotta-900: #6b2e1e;
+  
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@layer base {
+  body {
+    @apply bg-stone-50 text-stone-900 font-sans antialiased selection:bg-terracotta-200 selection:text-terracotta-900;
+  }
+}
+
+/* Custom Hide Scrollbar classes */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
