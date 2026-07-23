@@ -250,7 +250,7 @@ export default function App() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-              className="w-full max-w-[300px] sm:max-w-[340px] my-2"
+              className="w-full max-w-110 sm:max-w-125 my-2"
             >
               <VideoPlayer badge="Angola · Missões" />
             </motion.div>
