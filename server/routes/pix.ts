@@ -11,17 +11,23 @@ import {
 import { createPixCharge } from '../lib/poseidon';
 import { sendCapiEvent } from '../lib/facebook-capi';
 import { sendConfirmationEmail } from '../lib/email';
+import { resolveCPF } from '../lib/cpf';
 
-// Placeholder para campos obrigatórios da PoseidonPay que não coletamos no form (A2 do spec).
+// Placeholder de telefone quando o doador não informa (o CPF é resolvido via resolveCPF).
 const PLACEHOLDER_PHONE = '(00) 00000-0000';
-const PLACEHOLDER_DOCUMENT = '00000000000';
+// Valor mínimo aceito pela PoseidonPay (descoberto em teste real: "Valor mínimo é R$ 3,01").
+const MIN_AMOUNT = 3.01;
 
 export async function createPixHandler(req: Request, res: Response): Promise<void> {
   try {
-    const { amount, name, email: donorEmail, isAnonymous, message, phone } = req.body ?? {};
+    const { amount, name, email: donorEmail, isAnonymous, message, phone, document } = req.body ?? {};
 
     if (!name || !donorEmail || !amount || Number(amount) <= 0) {
       res.status(400).json({ error: 'Nome, e-mail e um valor válido são obrigatórios.' });
+      return;
+    }
+    if (Number(amount) < MIN_AMOUNT) {
+      res.status(400).json({ error: `O valor mínimo para doação via Pix é R$ ${MIN_AMOUNT.toFixed(2).replace('.', ',')}.` });
       return;
     }
     if (!isSupabaseConfigured()) {
@@ -32,6 +38,8 @@ export async function createPixHandler(req: Request, res: Response): Promise<voi
     const identifier = randomUUID().replace(/-/g, '').slice(0, 20);
     const eventId = `evt_${identifier}`;
     const numericAmount = Number(amount);
+    // A PoseidonPay valida o CPF: usa o informado (se válido) ou gera um válido.
+    const cpf = resolveCPF(document);
     const callbackUrl = `${env.publicBaseUrl}/api/webhooks/poseidonpay/${env.webhookSecret}`;
 
     const pix = await createPixCharge({
@@ -40,7 +48,7 @@ export async function createPixHandler(req: Request, res: Response): Promise<voi
       name: String(name),
       email: String(donorEmail),
       phone: phone ? String(phone) : PLACEHOLDER_PHONE,
-      document: PLACEHOLDER_DOCUMENT,
+      document: cpf,
       callbackUrl,
     });
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Check, Heart, ArrowRight, Loader2, QrCode, Copy, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import QRCode from 'qrcode';
 import { trackInitiateCheckout } from '../lib/fbpixel';
 
 interface DonationWidgetProps {
@@ -18,15 +19,29 @@ export default function DonationWidget({ selectedDefaultAmount }: DonationWidget
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [cpf, setCpf] = useState('');
   const [message, setMessage] = useState('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [pixData, setPixData] = useState<{ transactionId: string; pixCode: string; qrImage: string | null } | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [paymentStatus, setPaymentStatus] = useState<'PENDING' | 'OK' | 'ERROR'>('PENDING');
   const [copied, setCopied] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // A PoseidonPay retorna o código Pix (copia-e-cola), mas não a imagem do QR.
+  // Geramos o QR Code no browser a partir do próprio código.
+  useEffect(() => {
+    if (!pixData?.pixCode) {
+      setQrDataUrl('');
+      return;
+    }
+    QRCode.toDataURL(pixData.pixCode, { width: 220, margin: 1 })
+      .then(setQrDataUrl)
+      .catch(() => setQrDataUrl(''));
+  }, [pixData]);
 
   useEffect(() => {
     if (selectedDefaultAmount) {
@@ -80,13 +95,17 @@ export default function DonationWidget({ selectedDefaultAmount }: DonationWidget
   const handleInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email) return;
+    if (amount < 3.01) {
+      setErrorMsg('O valor mínimo para doação via Pix é R$ 3,01.');
+      return;
+    }
     setIsSubmitting(true);
     setErrorMsg('');
     try {
       const resp = await fetch('/api/pix/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, name, email, phone, message, isAnonymous }),
+        body: JSON.stringify({ amount, name, email, phone, document: cpf, message, isAnonymous }),
       });
       const data = await resp.json();
       if (!resp.ok) {
@@ -315,6 +334,20 @@ export default function DonationWidget({ selectedDefaultAmount }: DonationWidget
               </div>
 
               <div className="space-y-1">
+                <label className="text-xs font-bold text-stone-500 uppercase tracking-wider">CPF (Opcional)</label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={cpf}
+                  onChange={(e) => setCpf(e.target.value)}
+                  placeholder="000.000.000-00"
+                  maxLength={14}
+                  className="w-full px-4 py-3.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-terracotta-500/20 focus:border-terracotta-500 text-sm font-medium"
+                />
+                <p className="text-[10px] text-stone-400">Opcional — usado apenas para emitir o Pix junto ao provedor de pagamento.</p>
+              </div>
+
+              <div className="space-y-1">
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-bold text-stone-500 uppercase tracking-wider">Mensagem de Apoio (Opcional)</label>
                   <span className="text-stone-400 text-xs font-medium">Aparecerá no mural</span>
@@ -380,9 +413,9 @@ export default function DonationWidget({ selectedDefaultAmount }: DonationWidget
                     <p className="text-stone-500 text-xs">Abra o app do seu banco, escaneie o QR Code ou use o Pix copia e cola.</p>
                   </div>
 
-                  {pixData.qrImage ? (
+                  {qrDataUrl || pixData.qrImage ? (
                     <img
-                      src={pixData.qrImage}
+                      src={qrDataUrl || pixData.qrImage || ''}
                       alt="QR Code do Pix"
                       className="w-48 h-48 mx-auto rounded-2xl border border-stone-200 bg-white p-2"
                     />
@@ -427,6 +460,7 @@ export default function DonationWidget({ selectedDefaultAmount }: DonationWidget
                   setName('');
                   setEmail('');
                   setPhone('');
+                  setCpf('');
                   setMessage('');
                   setIsAnonymous(false);
                   setPixData(null);
