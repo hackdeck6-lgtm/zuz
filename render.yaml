@@ -1,0 +1,50 @@
+# Render Blueprint — Zuzu for Africa (Pix + Supabase + CAPI)
+# Deploy: conecte este repositório em https://render.com (New > Blueprint).
+# Os valores marcados como sync:false você preenche no painel do Render (nunca no git).
+services:
+  - type: web
+    name: zuzu-for-africa
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # PoseidonPay
+      - key: POSEIDON_BASE_URL
+        value: https://app.poseidonpay.site/api/v1
+      - key: POSEIDON_PUBLIC_KEY
+        sync: false
+      - key: POSEIDON_SECRET_KEY
+        sync: false
+
+      # Supabase (service_role — só backend)
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+
+      # Facebook Conversions API (opcional)
+      - key: FB_PIXEL_ID
+        sync: false
+      - key: FB_CAPI_ACCESS_TOKEN
+        sync: false
+      - key: FB_TEST_EVENT_CODE
+        sync: false
+
+      # Facebook Pixel (frontend) — precisa estar presente no BUILD (VITE_)
+      - key: VITE_FB_PIXEL_ID
+        sync: false
+
+      # Resend (e-mail — opcional)
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: Zuzu for Africa <onboarding@resend.dev>
+
+      # Webhook — WEBHOOK_SECRET é o segredo na URL do callback.
+      # NÃO defina PUBLIC_BASE_URL: o código usa RENDER_EXTERNAL_URL automaticamente.
+      - key: WEBHOOK_SECRET
+        sync: false

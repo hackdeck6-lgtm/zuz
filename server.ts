@@ -3,7 +3,8 @@ import { createApp } from './server/app';
 
 dotenv.config();
 
-const PORT = 3000;
+// Render (e a maioria dos hosts) injeta a porta via PORT.
+const PORT = Number(process.env.PORT) || 3000;
 
 async function main() {
   const app = await createApp();

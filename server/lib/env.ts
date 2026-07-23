@@ -45,7 +45,8 @@ export const env = {
     return process.env.WEBHOOK_SECRET || '';
   },
   get publicBaseUrl(): string {
-    return process.env.PUBLIC_BASE_URL || 'http://localhost:3000';
+    // Prioridade: PUBLIC_BASE_URL explícito > URL externa do Render > localhost.
+    return process.env.PUBLIC_BASE_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
   },
 };
 
