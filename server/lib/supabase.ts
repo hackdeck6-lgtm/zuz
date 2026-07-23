@@ -81,10 +81,15 @@ export async function getTransactionByIdentifier(identifier: string): Promise<Tr
   return data ? normalizeRow(data) : null;
 }
 
+/**
+ * Marca a transação como paga de forma ATÔMICA: só atualiza se ainda estiver PENDING.
+ * Retorna a linha atualizada, ou null se nenhuma linha foi atualizada (ex.: já estava OK
+ * por causa de um webhook concorrente) — o chamador usa isso para garantir idempotência.
+ */
 export async function markTransactionPaid(
   identifier: string,
   poseidonTransactionId: string | null,
-): Promise<TransactionRow> {
+): Promise<TransactionRow | null> {
   const { data, error } = await db()
     .from('transactions')
     .update({
@@ -93,10 +98,11 @@ export async function markTransactionPaid(
       poseidon_transaction_id: poseidonTransactionId,
     })
     .eq('identifier', identifier)
+    .eq('status', 'PENDING')
     .select()
-    .single();
+    .maybeSingle();
   if (error) throw new Error(`markTransactionPaid: ${error.message}`);
-  return normalizeRow(data);
+  return data ? normalizeRow(data) : null;
 }
 
 export async function insertMuralMessage(m: {
@@ -106,4 +112,29 @@ export async function insertMuralMessage(m: {
 }): Promise<void> {
   const { error } = await db().from('mural_messages').insert(m);
   if (error) throw new Error(`insertMuralMessage: ${error.message}`);
+}
+
+export interface MuralMessage {
+  id: string;
+  name: string;
+  amount: number;
+  message: string;
+  timestamp: string;
+}
+
+/** Lê as últimas mensagens confirmadas do mural (mais recentes primeiro). */
+export async function getMuralMessages(limit = 30): Promise<MuralMessage[]> {
+  const { data, error } = await db()
+    .from('mural_messages')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(`getMuralMessages: ${error.message}`);
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    name: row.name,
+    amount: Number(row.amount),
+    message: row.message,
+    timestamp: row.created_at,
+  }));
 }

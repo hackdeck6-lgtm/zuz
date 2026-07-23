@@ -3,16 +3,7 @@ import path from 'path';
 import { GoogleGenAI } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
 import { registerPixRoutes } from './routes/pix';
-
-interface Donation {
-  id: string;
-  name: string;
-  amount: number;
-  message: string;
-  timestamp: string;
-}
-
-const recentDonations: Donation[] = [];
+import { getMuralMessages, isSupabaseConfigured } from './lib/supabase';
 
 let aiClient: GoogleGenAI | null = null;
 function getAiClient(): GoogleGenAI | null {
@@ -33,29 +24,20 @@ export async function createApp(): Promise<express.Express> {
   app.use(express.json());
   registerPixRoutes(app);
 
-  app.get('/api/donations', (req, res) => {
+  app.get('/api/donations', async (req, res) => {
+    let donations: any[] = [];
+    if (isSupabaseConfigured()) {
+      try {
+        donations = await getMuralMessages(30);
+      } catch (err: any) {
+        console.error('[GET /api/donations] erro ao ler mural:', err?.message);
+      }
+    }
     res.json({
       success: true,
-      donations: recentDonations,
+      donations,
       totals: { yearSince: 2019, mealsPerDay: 800, childrenAssisted: 1300, country: 'Angola' },
     });
-  });
-
-  app.post('/api/donations', (req, res) => {
-    const { name, amount, message } = req.body;
-    if (!name || !amount) {
-      return res.status(400).json({ success: false, error: 'Name and amount are required.' });
-    }
-    const newDonation: Donation = {
-      id: Math.random().toString(36).substring(2, 11),
-      name: String(name).trim() || 'Doador Anônimo',
-      amount: Number(amount),
-      message: String(message || '').trim() || 'Apoio ao Zuzu for Africa!',
-      timestamp: new Date().toISOString(),
-    };
-    recentDonations.unshift(newDonation);
-    if (recentDonations.length > 30) recentDonations.pop();
-    res.json({ success: true, donation: newDonation });
   });
 
   app.post('/api/generate-message', async (req, res) => {

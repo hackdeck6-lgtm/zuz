@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Heart, ArrowRight, Loader2, Mail, Clock, QrCode, Copy, RefreshCw } from 'lucide-react';
+import { Check, Heart, ArrowRight, Loader2, QrCode, Copy, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { trackInitiateCheckout } from '../lib/fbpixel';
 
 interface DonationWidgetProps {
-  onDonationComplete: (name: string, amount: number, message: string) => void;
   selectedDefaultAmount?: number | null;
 }
 
-export default function DonationWidget({ onDonationComplete, selectedDefaultAmount }: DonationWidgetProps) {
-  // 1: Amount, 2: Info + join support list, 3: Confirmation (NO payment yet)
+export default function DonationWidget({ selectedDefaultAmount }: DonationWidgetProps) {
+  // 1: Valor, 2: Dados do doador, 3: QR Code Pix + polling de confirmação
   const [step, setStep] = useState(1);
   const [amount, setAmount] = useState<number>(50);
   const [customAmount, setCustomAmount] = useState<string>('');
@@ -98,7 +97,6 @@ export default function DonationWidget({ onDonationComplete, selectedDefaultAmou
       setPixData({ transactionId: data.transactionId, pixCode: data.pixCode, qrImage: data.qrImage });
       // Dedup com o servidor: mesmo eventID do CAPI InitiateCheckout.
       if (data.eventId) trackInitiateCheckout(data.eventId, amount);
-      onDonationComplete(isAnonymous ? 'Doador Anônimo' : name, amount, message);
       setPaymentStatus('PENDING');
       setStep(3);
     } catch {

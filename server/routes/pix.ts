@@ -116,28 +116,30 @@ export async function webhookHandler(req: Request, res: Response): Promise<void>
 
     // Só processa como pago quando o status confirmado é OK.
     if (status === 'OK') {
-      await markTransactionPaid(identifier, transactionId ?? null);
+      const paid = await markTransactionPaid(identifier, transactionId ?? null);
+      // Se paid === null, outra chamada de webhook concorrente já processou — não duplicar.
+      if (paid) {
+        await sendCapiEvent({
+          eventName: 'Purchase',
+          email: tx.donor_email,
+          value: tx.amount,
+          eventId: `evt_${identifier}`,
+          eventSourceUrl: env.publicBaseUrl,
+        });
 
-      await sendCapiEvent({
-        eventName: 'Purchase',
-        email: tx.donor_email,
-        value: tx.amount,
-        eventId: `evt_${identifier}`,
-        eventSourceUrl: env.publicBaseUrl,
-      });
+        await sendConfirmationEmail({
+          to: tx.donor_email,
+          name: tx.donor_name,
+          amount: tx.amount,
+          identifier,
+        });
 
-      await sendConfirmationEmail({
-        to: tx.donor_email,
-        name: tx.donor_name,
-        amount: tx.amount,
-        identifier,
-      });
-
-      await insertMuralMessage({
-        name: tx.is_anonymous ? 'Doador Anônimo' : tx.donor_name,
-        amount: tx.amount,
-        message: tx.message || 'Apoio ao Zuzu for Africa!',
-      });
+        await insertMuralMessage({
+          name: tx.is_anonymous ? 'Doador Anônimo' : tx.donor_name,
+          amount: tx.amount,
+          message: tx.message || 'Apoio ao Zuzu for Africa!',
+        });
+      }
     }
 
     res.json({ received: true });

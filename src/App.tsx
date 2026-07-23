@@ -87,22 +87,6 @@ export default function App() {
     fetchBoardData();
   }, []);
 
-  const handleDonationComplete = async (name: string, amount: number, message: string) => {
-    try {
-      const response = await fetch('/api/donations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, amount, message }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        fetchBoardData();
-      }
-    } catch (error) {
-      console.error('Error posting donation:', error);
-    }
-  };
-
   const scrollToSection = (id: string) => {
     const section = document.getElementById(id);
     if (section) {
@@ -673,9 +657,6 @@ export default function App() {
               {/* DonationWidget rolável */}
               <div className="max-h-[80vh] overflow-y-auto p-6">
                 <DonationWidget
-                  onDonationComplete={(name, amount, msg) => {
-                    handleDonationComplete(name, amount, msg);
-                  }}
                   selectedDefaultAmount={selectedDefaultAmount}
                 />
               </div>

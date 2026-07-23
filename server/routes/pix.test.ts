@@ -123,6 +123,22 @@ describe('webhookHandler', () => {
     await webhookHandler(req, res);
     expect(supa.insertMuralMessage).toHaveBeenCalledWith(expect.objectContaining({ name: 'Doador Anônimo' }));
   });
+
+  it('webhook concorrente não duplica quando markTransactionPaid retorna null', async () => {
+    (supa.getTransactionByIdentifier as any).mockResolvedValue({
+      identifier: 'id1', amount: 100, donor_name: 'João', donor_email: 'j@x.com',
+      is_anonymous: false, message: 'oi', status: 'PENDING',
+    });
+    (supa.markTransactionPaid as any).mockResolvedValue(null);
+    const req = { params: { secret: 'sekret' }, body: { identifier: 'id1', status: 'OK', transactionId: 'tx' } } as unknown as Request;
+    const res = mockRes();
+    await webhookHandler(req, res);
+    expect(supa.markTransactionPaid).toHaveBeenCalledWith('id1', 'tx');
+    expect(email.sendConfirmationEmail).not.toHaveBeenCalled();
+    expect(supa.insertMuralMessage).not.toHaveBeenCalled();
+    expect(capi.sendCapiEvent).not.toHaveBeenCalled();
+    expect(res.json).toHaveBeenCalledWith({ received: true });
+  });
 });
 
 describe('statusHandler', () => {
