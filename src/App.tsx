@@ -50,15 +50,15 @@ export default function App() {
     },
     {
       q: 'Como será feito o pagamento?',
-      a: 'A cobrança ainda não está ativa neste site. Quando for liberada pela equipe do projeto, será processada por um provedor de pagamento seguro (como Stripe). Por enquanto, você pode entrar na lista de apoiadores e será avisado assim que a doação estiver disponível — nenhum valor é cobrado agora, e este site não solicita dados de cartão.',
+      a: 'O pagamento é feito por Pix, de forma rápida e segura. Ao escolher o valor e informar seus dados, geramos um QR Code (e um código Pix copia e cola) para você concluir a doação direto no app do seu banco. Assim que o pagamento é confirmado, você recebe um e-mail de confirmação. Este site não solicita dados de cartão.',
     },
     {
       q: 'Como sei que este é o canal oficial?',
-      a: 'Este site é uma página de apoio ao projeto. A ONG mantém canais oficiais próprios (site, redes sociais e conta bancária com CNPJ registrado). Antes de qualquer doação, confira sempre se o destino corresponde aos canais oficiais divulgados pela própria Zuzu for Africa e pelos responsáveis pelo projeto. Desconfie de páginas que peçam dados de cartão diretamente.',
+      a: 'Este site é uma página de apoio ao projeto. A ONG mantém canais oficiais próprios (site, redes sociais e conta com CNPJ registrado). O pagamento aqui é feito exclusivamente via Pix — nunca pedimos dados de cartão. Antes de doar, confira sempre se o destino corresponde aos canais oficiais divulgados pela própria Zuzu for Africa.',
     },
     {
       q: 'Vou receber comprovante ou prestação de contas?',
-      a: 'Quando o pagamento estiver ativo, você receberá a confirmação da sua contribuição por e-mail. A prestação de contas e o acompanhamento das missões são divulgados pela ONG em seus canais oficiais e nas redes sociais, onde é possível ver os registros das entregas realizadas.',
+      a: 'Sim. Assim que seu Pix é confirmado, enviamos um e-mail de confirmação da sua doação. A prestação de contas e o acompanhamento das missões são divulgados pela ONG em seus canais oficiais e nas redes sociais, onde é possível ver os registros das entregas realizadas.',
     },
     {
       q: 'Posso ajudar de outras formas além de doar?',
@@ -285,7 +285,7 @@ export default function App() {
                 <Heart size={18} className="fill-current" /> Quero Apoiar
               </button>
               <p className="text-stone-400 text-xs">
-                Sem cobrança agora. Você entra na lista de apoio e escolhe o valor.
+                Doe agora via Pix. Escolha o valor e conclua a doação em segundos.
               </p>
             </motion.div>
 
@@ -623,7 +623,7 @@ export default function App() {
             
             <div className="flex items-center gap-1">
               <ShieldCheck size={12} className="text-terracotta-500" />
-              <span>Site em construção — pagamento via Stripe em breve</span>
+              <span>Pagamento via Pix, com confirmação instantânea</span>
             </div>
           </div>
         </div>
@@ -658,7 +658,7 @@ export default function App() {
                   </div>
                   <div>
                     <h3 className="font-display font-black text-sm tracking-widest uppercase text-stone-900">Quero Apoiar</h3>
-                    <p className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider">Pagamento em breve — sem cobrança agora</p>
+                    <p className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider">Doe agora via Pix — confirmação instantânea</p>
                   </div>
                 </div>
 

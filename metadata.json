@@ -1,6 +1,6 @@
 {
   "name": "Zuzu for Africa",
-  "description": "Plataforma remodelada e de alta conversão para doações e divulgação do projeto Zuzu for Africa, apresentando VSL interativa, simulador de impacto em tempo real e gerador de mensagens de esperança via Inteligência Artificial.",
+  "description": "Plataforma de alta conversão para doações via Pix ao projeto Zuzu for Africa, com QR Code instantâneo, simulador de impacto em tempo real e gerador de mensagens de esperança via Inteligência Artificial.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
