@@ -1,21 +1,52 @@
-/** Leitura centralizada das variáveis de ambiente. Strings vazias = não configurado. */
+/**
+ * Leitura centralizada das variáveis de ambiente. Strings vazias = não configurado.
+ *
+ * Usa getters para ler `process.env` a CADA acesso (leitura tardia), não uma
+ * única vez no import. Isso garante que o valor correto seja lido após
+ * `dotenv.config()` no runtime, e que testes que definem env vars em `beforeEach`
+ * enxerguem os valores atualizados (imports ESM são içados antes dos hooks de teste).
+ */
 export const env = {
-  poseidonBaseUrl: process.env.POSEIDON_BASE_URL || 'https://app.poseidonpay.site/api/v1',
-  poseidonPublicKey: process.env.POSEIDON_PUBLIC_KEY || '',
-  poseidonSecretKey: process.env.POSEIDON_SECRET_KEY || '',
+  get poseidonBaseUrl(): string {
+    return process.env.POSEIDON_BASE_URL || 'https://app.poseidonpay.site/api/v1';
+  },
+  get poseidonPublicKey(): string {
+    return process.env.POSEIDON_PUBLIC_KEY || '';
+  },
+  get poseidonSecretKey(): string {
+    return process.env.POSEIDON_SECRET_KEY || '';
+  },
 
-  supabaseUrl: process.env.SUPABASE_URL || '',
-  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  get supabaseUrl(): string {
+    return process.env.SUPABASE_URL || '';
+  },
+  get supabaseServiceRoleKey(): string {
+    return process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  },
 
-  fbPixelId: process.env.FB_PIXEL_ID || '',
-  fbCapiAccessToken: process.env.FB_CAPI_ACCESS_TOKEN || '',
-  fbTestEventCode: process.env.FB_TEST_EVENT_CODE || '',
+  get fbPixelId(): string {
+    return process.env.FB_PIXEL_ID || '';
+  },
+  get fbCapiAccessToken(): string {
+    return process.env.FB_CAPI_ACCESS_TOKEN || '';
+  },
+  get fbTestEventCode(): string {
+    return process.env.FB_TEST_EVENT_CODE || '';
+  },
 
-  resendApiKey: process.env.RESEND_API_KEY || '',
-  emailFrom: process.env.EMAIL_FROM || 'Zuzu for Africa <onboarding@resend.dev>',
+  get resendApiKey(): string {
+    return process.env.RESEND_API_KEY || '';
+  },
+  get emailFrom(): string {
+    return process.env.EMAIL_FROM || 'Zuzu for Africa <onboarding@resend.dev>';
+  },
 
-  webhookSecret: process.env.WEBHOOK_SECRET || '',
-  publicBaseUrl: process.env.PUBLIC_BASE_URL || 'http://localhost:3000',
+  get webhookSecret(): string {
+    return process.env.WEBHOOK_SECRET || '';
+  },
+  get publicBaseUrl(): string {
+    return process.env.PUBLIC_BASE_URL || 'http://localhost:3000';
+  },
 };
 
 /** Lança se as chaves da PoseidonPay não estiverem configuradas. */
