@@ -40,6 +40,11 @@ export async function createApp(): Promise<express.Express> {
     });
   });
 
+  // Endpoint leve para health check e para o self-ping anti-hibernação (Render free tier).
+  app.get('/api/health', (req, res) => {
+    res.json({ ok: true, ts: new Date().toISOString() });
+  });
+
   app.post('/api/generate-message', async (req, res) => {
     const { topic, senderName } = req.body;
     const keywords = topic || 'esperança, água limpa, amor e futuro';
